@@ -3,9 +3,14 @@
   "appName": "TTu",
   "webDir": "www",
   "server": {
-    "url": "https://ttu.hadtah.com",
+    "url": "https://ttu.hadtah.workers.dev",
     "cleartext": false,
-    "androidScheme": "https"
+    "androidScheme": "https",
+    "allowNavigation": ["ttu.hadtah.workers.dev"]
   },
-  "android": { "allowMixedContent": false, "backgroundColor": "#f6fbf9" }
+  "android": {
+    "allowMixedContent": false,
+    "backgroundColor": "#0a0a0a",
+    "webContentsDebuggingEnabled": false
+  }
 }

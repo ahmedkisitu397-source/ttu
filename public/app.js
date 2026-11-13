@@ -132,6 +132,27 @@ $('#ask').addEventListener('submit', async (e) => {
   renderAnswer(card, r.body); setUsage(r.body.usage);
 });
 
+
+async function blobToBase64(blob) {
+  const buf = new Uint8Array(await blob.arrayBuffer());
+  let binary = '';
+  const step = 0x8000;
+  for (let i = 0; i < buf.length; i += step) binary += String.fromCharCode(...buf.subarray(i, i + step));
+  return btoa(binary);
+}
+async function deliverPdf(blob, filename) {
+  // Android wrapper writes to the device Downloads folder.
+  if (window.TTuNative && typeof window.TTuNative.savePdf === 'function') {
+    window.TTuNative.savePdf(await blobToBase64(blob), filename || 'TTu.pdf');
+    return 'native';
+  }
+  const url = URL.createObjectURL(blob);
+  const link = Object.assign(document.createElement('a'), { href: url, download: filename || 'TTu.pdf' });
+  document.body.appendChild(link); link.click(); link.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 10000);
+  return 'file';
+}
+
 function renderAnswer(card, a) {
   const srcs = a.sources || [];
   const imgs = (a.images || []).map((im) => `<a href="${esc(safeUrl(srcs[im.ref - 1]?.url))}" target="_blank" rel="noopener" title="${esc(im.caption)}"><img src="${esc(safeUrl(im.url))}" alt="${esc(im.caption)}" loading="lazy" referrerpolicy="no-referrer" onerror="this.parentNode.remove()"></a>`).join('');
@@ -160,10 +181,10 @@ function renderAnswer(card, a) {
       blob = await buildPdf(j.answer, { email: j.email });
     } catch (err) { console.error(err); btn.disabled = false; note.textContent = 'Could not create the PDF. Try again.'; return; }
     btn.disabled = false;
-    const url = URL.createObjectURL(blob); const link = Object.assign(document.createElement('a'), { href: url, download: j.filename || 'TTu.pdf' });
-    document.body.appendChild(link); link.click(); link.remove(); setTimeout(() => URL.revokeObjectURL(url), 10000);
+    const how = await deliverPdf(blob, j.filename || 'TTu.pdf');
     if (j.usage) setUsage(j.usage);
-    upd(); toast('PDF downloaded');
+    upd();
+    toast(how === 'native' ? 'PDF saved to Downloads' : 'PDF downloaded');
   });
 }
 

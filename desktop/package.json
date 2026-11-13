@@ -1,16 +1,41 @@
 {
   "name": "ttu-desktop",
+  "productName": "TTu",
   "private": true,
-  "version": "0.1.0",
-  "description": "TTu desktop app (Electron shell around the hosted TTu PWA)",
+  "version": "1.0.0",
+  "description": "TTu AI search by Hadtah Technologies Limited",
+  "author": "Hadtah Technologies Limited",
+  "license": "UNLICENSED",
   "main": "main.js",
-  "scripts": { "start": "electron .", "dist:win": "electron-builder --win nsis" },
-  "devDependencies": { "electron": "^33.0.0", "electron-builder": "^25.0.0" },
+  "scripts": {
+    "start": "electron .",
+    "dist:win": "electron-builder --win nsis --x64 --publish never"
+  },
+  "devDependencies": {
+    "electron": "^45.0.0",
+    "electron-builder": "^26.0.0"
+  },
   "build": {
     "appId": "com.hadtah.ttu",
     "productName": "TTu",
-    "copyright": "© Hadtah",
-    "win": { "target": "nsis", "icon": "../public/icons/icon-512.png" },
-    "nsis": { "oneClick": false, "allowToChangeInstallationDirectory": true, "shortcutName": "TTu" }
+    "copyright": "Copyright (c) 2026 Hadtah Technologies Limited",
+    "directories": { "output": "dist", "buildResources": "build" },
+    "files": ["main.js", "build/**", "package.json"],
+    "win": {
+      "target": [{ "target": "nsis", "arch": ["x64"] }],
+      "icon": "build/icon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "TTu",
+      "installerIcon": "build/icon.ico",
+      "uninstallerIcon": "build/icon.ico",
+      "artifactName": "TTu-Setup-${version}.exe"
+    },
+    "npmRebuild": false
   }
 }

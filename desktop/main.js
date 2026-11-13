@@ -1,11 +1,57 @@
-// Minimal Electron shell: opens the hosted TTu web app in its own window.
-const { app, BrowserWindow, shell } = require('electron');
-const URL_ = process.env.TTU_URL || 'https://ttu.hadtah.com';
-app.whenReady().then(() => {
-  const win = new BrowserWindow({ width: 1100, height: 800, minWidth: 360, backgroundColor: '#f6fbf9', title: 'TTu',
-    icon: __dirname + '/../public/icons/icon-256.png', autoHideMenuBar: true, webPreferences: { contextIsolation: true, sandbox: true } });
-  win.loadURL(URL_);
-  // Source links open in the normal browser.
-  win.webContents.setWindowOpenHandler(({ url }) => { if (!url.startsWith(URL_)) shell.openExternal(url); return { action: 'deny' }; });
-});
+// TTu desktop shell (Electron): loads the hosted app and keeps YouTube embeds in-window.
+const { app, BrowserWindow, shell, Menu, dialog } = require('electron');
+const path = require('path');
+
+const START = process.env.TTU_URL || 'https://ttu.hadtah.workers.dev';
+const ORIGIN = new URL(START).origin;
+
+let win = null;
+if (!app.requestSingleInstanceLock()) app.quit();
+app.on('second-instance', () => { if (win) { if (win.isMinimized()) win.restore(); win.focus(); } });
+
+function isAppUrl(url) {
+  try { return new URL(url).origin === ORIGIN; } catch { return false; }
+}
+
+function createWindow() {
+  win = new BrowserWindow({
+    width: 1100,
+    height: 800,
+    minWidth: 390,
+    minHeight: 640,
+    title: 'TTu',
+    backgroundColor: '#0a0a0a',
+    icon: path.join(__dirname, 'build', 'icon.png'),
+    autoHideMenuBar: true,
+    webPreferences: { contextIsolation: true, nodeIntegration: false, sandbox: true },
+  });
+  Menu.setApplicationMenu(null);
+  win.loadURL(START);
+
+  // Source links and "Watch on YouTube" open in the system browser.
+  // youtube-nocookie iframes stay inside the app (they are not navigations).
+  win.webContents.setWindowOpenHandler(({ url }) => {
+    if (isAppUrl(url)) return { action: 'allow' };
+    if (/^https?:/i.test(url)) shell.openExternal(url);
+    return { action: 'deny' };
+  });
+  win.webContents.on('will-navigate', (e, url) => {
+    if (isAppUrl(url)) return;
+    e.preventDefault();
+    if (/^https?:/i.test(url)) shell.openExternal(url);
+  });
+
+  win.webContents.session.on('will-download', (_event, item) => {
+    const name = item.getFilename() || 'TTu.pdf';
+    const dest = dialog.showSaveDialogSync(win, {
+      title: 'Save PDF',
+      defaultPath: name,
+      filters: [{ name: 'PDF', extensions: ['pdf'] }, { name: 'All files', extensions: ['*'] }],
+    });
+    if (!dest) { item.cancel(); return; }
+    item.setSavePath(dest);
+  });
+}
+
+app.whenReady().then(createWindow);
 app.on('window-all-closed', () => app.quit());

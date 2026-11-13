@@ -2,8 +2,18 @@ node_modules/
 data/
 .env
 *.db
-android/android/
-android/www/
-desktop/dist/
 .wrangler/
 .dev.vars
+
+# Android / Electron build output
+android/node_modules/
+android/android/.gradle/
+android/android/build/
+android/android/app/build/
+android/android/app/.cxx/
+android/android/local.properties
+android/android/captures/
+android/android/*.iml
+android/android/.idea/
+desktop/node_modules/
+desktop/dist/

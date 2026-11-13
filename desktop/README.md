@@ -1,8 +1,11 @@
-# TTu on Windows / Mac / Linux desktops
+# TTu for Windows
 
-**Easiest (no installer needed):** open the live site in Chrome or Edge → click the *Install* icon in the address bar
-(or menu → "Install TTu"). It gets its own window, Start-menu entry and the pigeon icon. This works today because TTu is a PWA.
+Electron shell around the hosted app at https://ttu.hadtah.workers.dev.
 
-**Downloadable `.exe` installer for hadtah.com:** this folder is an Electron shell.
-On a Windows PC (or any machine with Node 20+): `cd desktop && npm install && npm run dist:win` → `dist/TTu Setup 0.1.0.exe`.
-Set `TTU_URL` if the live address differs. Optional: sign the .exe with a code-signing certificate so Windows SmartScreen doesn't warn users.
+```
+npm install
+npm start                          # dev
+npm run dist:win                   # NSIS installer → dist/TTu-Setup-1.0.0.exe
+```
+
+Source links and “Watch on YouTube” open in the system browser. YouTube embeds play in the window. PDF downloads use the normal Save dialog. The installer is built unsigned on GitHub Actions (Windows SmartScreen will warn).
