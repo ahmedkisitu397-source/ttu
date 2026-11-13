@@ -6,7 +6,7 @@ account posted on a given day) using **open, free sources plus Google Search**, 
 
 - **Sign-in:** Gmail address + 6-digit email code (only `@gmail.com` / `@googlemail.com`). No Google OAuth setup needed.
 - **Limits:** 15 questions/tasks per day (reset at midnight Africa/Kampala). 20 free PDF downloads, then the **weekly plan, US$0.81/week** (or UGX 3,000 by mobile money) through Flutterwave.
-- **Sources:** Wikipedia, OpenAlex (250M+ papers), arXiv, Crossref, Bluesky (public AppView), Mastodon (public API), Reddit (public JSON / app-only OAuth), **Google Search grounding** (when an AI key is set), and optional YouTube Data API and Google Programmable Search. No scraping of closed platforms (Instagram, TikTok, Facebook, dating apps). **Videos are never downloaded**, only shown as links or official YouTube embeds.
+- **Sources:** Wikipedia, OpenAlex (250M+ papers), arXiv, Crossref, **Google News** (Uganda and world RSS), **BBC** and other free news RSS (Al Jazeera, The Guardian, NPR, Africanews, The Independent, The Observer, Nile Post), **DuckDuckGo Lite** web search with short page excerpts, Bluesky (public AppView), Mastodon (public API), Reddit (public JSON / app-only OAuth), **Google Search grounding** (when an AI key is set), and optional YouTube Data API and Google Programmable Search. No scraping of closed platforms (Instagram, TikTok, Facebook, dating apps). **Videos are never downloaded**, only shown as links or official YouTube embeds.
 - **AI:** Google Gemini (`gemini-3.1-flash-lite`) through the native `generateContent` API, with **Google Search grounding**. Gathered open sources are passed in as extra context, and grounded web pages are merged into the cited source list. If grounding hits a free-tier quota (HTTP 429) or fails, TTu retries without search (and, if needed, via Gemini's OpenAI-compatible endpoint) rather than erroring. With no key, TTu runs in **demo mode**: it builds an extractive summary straight from the fetched sources (clearly badged "Demo mode").
 - **Platforms:** installable PWA (Android + desktop), Capacitor/TWA wrapper for an APK (`android/`), and an Electron shell for a Windows `.exe` installer (`desktop/`).
 
@@ -54,6 +54,7 @@ worker.js            Cloudflare Workers entry (D1 + static assets)
 server.js            Node entry (node:sqlite + static files)
 lib/app.js           Hono routes: auth, ask, PDF allowance, payments
 lib/sources.js       open-source connectors + intent detection (general vs "posts by X on <date>")
+lib/web.js           Google News, BBC and other free RSS, DuckDuckGo Lite web search + page excerpts
 lib/ai.js            Gemini generateContent synthesis, Google Search grounding, demo-mode extractive summary
 public/pdf.js        PDFKit in the browser: TTu header, answer, images, clickable sources, footer
 lib/auth.js          Gmail-only email-code sign-in (hashed codes, 10-min expiry, 5 tries, rate limits), sessions
