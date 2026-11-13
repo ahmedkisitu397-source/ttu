@@ -29,6 +29,7 @@
 
 *,*::before,*::after{box-sizing:border-box}
 html,body{margin:0;height:100%}
+body:has(main.chat),body:has(main.signin){overflow:hidden}
 html{background:var(--bg)}
 body{
   font-family:Calibri,Carlito,"Segoe UI",Arial,sans-serif;
@@ -140,7 +141,7 @@ input:focus,textarea:focus{border-color:var(--focus);box-shadow:0 0 0 3px color-
 .suggest button:hover{background:var(--card);border-color:var(--ink)}
 .suggest button:active{transform:scale(.98)}
 
-.turn{scroll-margin-top:70px;animation:fadeUp .35s ease both}
+.turn{scroll-margin-top:8px;animation:fadeUp .35s ease both}
 .q-bubble{
   margin:18px 0 10px auto;max-width:85%;width:fit-content;
   background:var(--bubble);color:var(--bubble-ink);
