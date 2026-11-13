@@ -50,25 +50,42 @@ async function boot() {
 }
 
 
-// ---------- Theme (dark default, persisted) ----------
-function applyTheme(theme) {
-  const t = theme === 'light' ? 'light' : 'dark';
+// ---------- Theme (System / Light / Dark, persisted) ----------
+function themePref() {
+  let p = document.documentElement.getAttribute('data-theme-pref');
+  if (p === 'light' || p === 'dark' || p === 'system') return p;
+  try { p = localStorage.getItem('ttu-theme'); } catch { p = null; }
+  if (p === 'light' || p === 'dark' || p === 'system') return p;
+  return 'system';
+}
+function resolveTheme(pref) {
+  if (pref === 'light') return 'light';
+  if (pref === 'dark') return 'dark';
+  return window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+}
+function applyTheme(pref, persist = true) {
+  if (pref !== 'light' && pref !== 'dark' && pref !== 'system') pref = 'system';
+  const t = resolveTheme(pref);
   document.documentElement.setAttribute('data-theme', t);
-  try { localStorage.setItem('ttu-theme', t); } catch {}
+  document.documentElement.setAttribute('data-theme-pref', pref);
+  try { if (persist) localStorage.setItem('ttu-theme', pref); } catch {}
   const meta = document.getElementById('themeColor');
-  if (meta) meta.setAttribute('content', t === 'light' ? '#f5f5f5' : '#0a0a0a');
-  const btn = document.getElementById('themeBtn');
-  if (btn) btn.setAttribute('aria-label', t === 'dark' ? 'Switch to light theme' : 'Switch to dark theme');
+  if (meta) meta.setAttribute('content', t === 'light' ? '#ffffff' : '#000000');
+  document.querySelectorAll('[data-theme-set]').forEach((b) => {
+    b.setAttribute('aria-pressed', b.getAttribute('data-theme-set') === pref ? 'true' : 'false');
+  });
 }
 (function initTheme() {
-  let t = 'dark';
-  try { t = localStorage.getItem('ttu-theme') === 'light' ? 'light' : 'dark'; } catch {}
-  applyTheme(t);
-  const btn = document.getElementById('themeBtn');
-  if (btn) btn.addEventListener('click', () => {
-    const next = document.documentElement.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
-    applyTheme(next);
+  applyTheme(themePref(), false);
+  document.querySelectorAll('[data-theme-set]').forEach((b) => {
+    b.addEventListener('click', () => applyTheme(b.getAttribute('data-theme-set')));
   });
+  const mq = window.matchMedia && matchMedia('(prefers-color-scheme: dark)');
+  if (mq) {
+    const on = () => { if (themePref() === 'system') applyTheme('system', false); };
+    if (mq.addEventListener) mq.addEventListener('change', on);
+    else if (mq.addListener) mq.addListener(on);
+  }
 })();
 
 // ---------- Sign-in ----------

@@ -1,11 +1,17 @@
-<!doctype html><html lang="en" data-theme="dark"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Privacy policy — TTu</title><link rel="icon" href="/favicon.png"><meta name="theme-color" content="#0a0a0a">
-<link rel="stylesheet" href="/styles.css">
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Privacy policy — TTu</title><link rel="icon" href="/favicon.png"><meta name="color-scheme" content="light dark"><meta name="theme-color" content="#000000">
 <script>
-(function(){try{var t=localStorage.getItem('ttu-theme');document.documentElement.setAttribute('data-theme',t==='light'?'light':'dark');}catch(e){document.documentElement.setAttribute('data-theme','dark');}}());
+(function(){var pref='system';try{var s=localStorage.getItem('ttu-theme');if(s==='light'||s==='dark'||s==='system')pref=s;}catch(e){}var dark=pref==='dark'||(pref!=='light'&&window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches);var t=dark?'dark':'light';var r=document.documentElement;r.setAttribute('data-theme',t);r.setAttribute('data-theme-pref',pref);var m=document.querySelector('meta[name="theme-color"]');if(m)m.setAttribute('content',t==='light'?'#ffffff':'#000000');})();
 </script>
+<link rel="stylesheet" href="/styles.css">
 </head>
-<body><header class="top"><a class="brand" href="/" aria-label="TTu home"><img src="/icons/logo-mark-64.png" width="34" height="34" alt=""><span>TTu</span></a></header><main class="doc"><h1>Privacy policy</h1><p class="muted">Last updated: [DATE]</p><p class="tpl"><b>Template:</b> this wording is a starting point. Fill in the bracketed details and have it reviewed by a Ugandan lawyer before launch.</p>
+<body><header class="top"><a class="brand" href="/" aria-label="TTu home"><img src="/icons/logo-mark-64.png" width="34" height="34" alt=""><span>TTu</span></a>
+  <div class="theme-seg" role="radiogroup" aria-label="Theme">
+    <button type="button" data-theme-set="system">System</button>
+    <button type="button" data-theme-set="light">Light</button>
+    <button type="button" data-theme-set="dark">Dark</button>
+  </div>
+</header><main class="doc"><h1>Privacy policy</h1><p class="muted">Last updated: [DATE]</p><p class="tpl"><b>Template:</b> this wording is a starting point. Fill in the bracketed details and have it reviewed by a Ugandan lawyer before launch.</p>
 <p>TTu is an AI search app operated by <b>Hadtah</b>, a company registered in Uganda ([URSB registration number], [physical address], Kampala). Hadtah is the data controller for TTu. This policy explains what personal data we collect, why, and your rights under the <b>Data Protection and Privacy Act, 2019</b> of Uganda and its Regulations (2021). Hadtah is registered with the Personal Data Protection Office (PDPO) under registration number [PDPO number].</p>
 <h2>1. Who can use TTu</h2><p>TTu is for people aged <b>18 and over</b>. We do not knowingly collect data from children. If you believe a child has created an account, contact us and we will delete it.</p>
 <h2>2. Data we collect</h2><ul>
@@ -19,4 +25,9 @@
 <h2>6. How long we keep it</h2><p>Account data is kept while your account is active. Questions and answers are kept for [12 months] so you can see your history, then deleted. Payment records are kept for the period required by Ugandan tax law. Sign-in codes expire after 10 minutes.</p>
 <h2>7. Your rights</h2><p>Under the Act you may ask to access your data, correct it, have it deleted, object to processing, and know how it is used. Email <a href="mailto:privacy@hadtah.com">privacy@hadtah.com</a>. We will respond within the time set by law. You may also complain to the Personal Data Protection Office (pdpo.go.ug).</p>
 <h2>8. Security</h2><p>Sign-in codes are stored only as one-way hashes, sessions use secure cookies, and connections use HTTPS. No system is perfectly secure, and we will notify the PDPO and affected users of any breach as the law requires.</p>
-<h2>9. Contact</h2><p>Hadtah, [address], Kampala, Uganda · <a href="mailto:privacy@hadtah.com">privacy@hadtah.com</a> · [phone]</p><p class="muted">© 2026 Hadtah. TTu is a product of Hadtah, Kampala, Uganda.</p></main></body></html>
+<h2>9. Contact</h2><p>Hadtah, [address], Kampala, Uganda · <a href="mailto:privacy@hadtah.com">privacy@hadtah.com</a> · [phone]</p><p class="muted">© 2026 Hadtah. TTu is a product of Hadtah, Kampala, Uganda.</p></main><script>
+(function(){function pref(){var p=document.documentElement.getAttribute("data-theme-pref");if(p==="light"||p==="dark"||p==="system")return p;try{p=localStorage.getItem("ttu-theme")}catch(e){p=null}return (p==="light"||p==="dark"||p==="system")?p:"system"}
+function resolve(p){if(p==="light"||p==="dark")return p;return window.matchMedia&&matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"}
+function apply(p,persist){if(p!=="light"&&p!=="dark"&&p!=="system")p="system";var t=resolve(p);document.documentElement.setAttribute("data-theme",t);document.documentElement.setAttribute("data-theme-pref",p);try{if(persist!==false)localStorage.setItem("ttu-theme",p)}catch(e){}var m=document.querySelector('meta[name="theme-color"]');if(m)m.setAttribute("content",t==="light"?"#ffffff":"#000000");document.querySelectorAll("[data-theme-set]").forEach(function(b){b.setAttribute("aria-pressed",b.getAttribute("data-theme-set")===p?"true":"false")})}
+apply(pref(),false);document.querySelectorAll("[data-theme-set]").forEach(function(b){b.addEventListener("click",function(){apply(b.getAttribute("data-theme-set") )})});var mq=window.matchMedia&&matchMedia("(prefers-color-scheme: dark)");if(mq){var on=function(){if(pref()==="system")apply("system",false)};if(mq.addEventListener)mq.addEventListener("change",on);else if(mq.addListener)mq.addListener(on)}})();
+</script></body></html>

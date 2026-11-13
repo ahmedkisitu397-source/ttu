@@ -1,11 +1,17 @@
-<!doctype html><html lang="en" data-theme="dark"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Terms of use — TTu</title><link rel="icon" href="/favicon.png"><meta name="theme-color" content="#0a0a0a">
-<link rel="stylesheet" href="/styles.css">
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Terms of use — TTu</title><link rel="icon" href="/favicon.png"><meta name="color-scheme" content="light dark"><meta name="theme-color" content="#000000">
 <script>
-(function(){try{var t=localStorage.getItem('ttu-theme');document.documentElement.setAttribute('data-theme',t==='light'?'light':'dark');}catch(e){document.documentElement.setAttribute('data-theme','dark');}}());
+(function(){var pref='system';try{var s=localStorage.getItem('ttu-theme');if(s==='light'||s==='dark'||s==='system')pref=s;}catch(e){}var dark=pref==='dark'||(pref!=='light'&&window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches);var t=dark?'dark':'light';var r=document.documentElement;r.setAttribute('data-theme',t);r.setAttribute('data-theme-pref',pref);var m=document.querySelector('meta[name="theme-color"]');if(m)m.setAttribute('content',t==='light'?'#ffffff':'#000000');})();
 </script>
+<link rel="stylesheet" href="/styles.css">
 </head>
-<body><header class="top"><a class="brand" href="/" aria-label="TTu home"><img src="/icons/logo-mark-64.png" width="34" height="34" alt=""><span>TTu</span></a></header><main class="doc"><h1>Terms of use</h1><p class="muted">Last updated: [DATE]</p><p class="tpl"><b>Template:</b> this wording is a starting point. Fill in the bracketed details and have it reviewed by a Ugandan lawyer before launch.</p>
+<body><header class="top"><a class="brand" href="/" aria-label="TTu home"><img src="/icons/logo-mark-64.png" width="34" height="34" alt=""><span>TTu</span></a>
+  <div class="theme-seg" role="radiogroup" aria-label="Theme">
+    <button type="button" data-theme-set="system">System</button>
+    <button type="button" data-theme-set="light">Light</button>
+    <button type="button" data-theme-set="dark">Dark</button>
+  </div>
+</header><main class="doc"><h1>Terms of use</h1><p class="muted">Last updated: [DATE]</p><p class="tpl"><b>Template:</b> this wording is a starting point. Fill in the bracketed details and have it reviewed by a Ugandan lawyer before launch.</p>
 <p>These terms are an agreement between you and <b>Hadtah</b> ([URSB registration number], Kampala, Uganda), the operator of TTu. By creating an account you accept them.</p>
 <h2>1. Eligibility</h2><p>You must be at least <b>18 years old</b> and have a Gmail address you control.</p>
 <h2>2. What TTu does</h2><p>TTu searches open, publicly available sources and uses artificial intelligence to summarise what it finds, with links to the original sources. AI answers can be incomplete or wrong. Always check important information against the linked sources. TTu is not a substitute for professional medical, legal, financial or other advice.</p>
@@ -18,4 +24,9 @@
 <h2>7. Liability</h2><p>TTu is provided "as is". To the extent the law allows, Hadtah is not liable for indirect losses or for decisions made using TTu answers. Our total liability is limited to the amount you paid us in the 30 days before the claim.</p>
 <h2>8. Changes</h2><p>We may update TTu and these terms. We will tell you of important changes in the app.</p>
 <h2>9. Law</h2><p>These terms are governed by the laws of Uganda, and disputes go to the courts of Uganda.</p>
-<h2>10. Contact</h2><p>Hadtah, [address], Kampala, Uganda · <a href="mailto:support@hadtah.com">support@hadtah.com</a></p><p class="muted">© 2026 Hadtah. TTu is a product of Hadtah, Kampala, Uganda.</p></main></body></html>
+<h2>10. Contact</h2><p>Hadtah, [address], Kampala, Uganda · <a href="mailto:support@hadtah.com">support@hadtah.com</a></p><p class="muted">© 2026 Hadtah. TTu is a product of Hadtah, Kampala, Uganda.</p></main><script>
+(function(){function pref(){var p=document.documentElement.getAttribute("data-theme-pref");if(p==="light"||p==="dark"||p==="system")return p;try{p=localStorage.getItem("ttu-theme")}catch(e){p=null}return (p==="light"||p==="dark"||p==="system")?p:"system"}
+function resolve(p){if(p==="light"||p==="dark")return p;return window.matchMedia&&matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"}
+function apply(p,persist){if(p!=="light"&&p!=="dark"&&p!=="system")p="system";var t=resolve(p);document.documentElement.setAttribute("data-theme",t);document.documentElement.setAttribute("data-theme-pref",p);try{if(persist!==false)localStorage.setItem("ttu-theme",p)}catch(e){}var m=document.querySelector('meta[name="theme-color"]');if(m)m.setAttribute("content",t==="light"?"#ffffff":"#000000");document.querySelectorAll("[data-theme-set]").forEach(function(b){b.setAttribute("aria-pressed",b.getAttribute("data-theme-set")===p?"true":"false")})}
+apply(pref(),false);document.querySelectorAll("[data-theme-set]").forEach(function(b){b.addEventListener("click",function(){apply(b.getAttribute("data-theme-set") )})});var mq=window.matchMedia&&matchMedia("(prefers-color-scheme: dark)");if(mq){var on=function(){if(pref()==="system")apply("system",false)};if(mq.addEventListener)mq.addEventListener("change",on);else if(mq.addListener)mq.addListener(on)}})();
+</script></body></html>
