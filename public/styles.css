@@ -33,6 +33,7 @@ input:focus,textarea:focus{border-color:var(--teal)}#code{letter-spacing:8px;tex
 .a-card{background:#fff;border:1px solid var(--line);border-radius:18px;padding:16px 16px 14px;line-height:1.6;box-shadow:0 4px 18px rgba(6,78,59,.05)}
 .a-head{display:flex;align-items:center;gap:8px;margin-bottom:6px;font-weight:700;color:var(--dark)}.a-head img{border-radius:7px}
 .badge{font-size:11px;font-weight:600;padding:2px 8px;border-radius:999px;background:#eef4ff;color:#1e3a8a;border:1px solid #c7d7fe}
+.badge.web{background:#ecfdf5;color:#065f46;border-color:#a7f3d0}
 .answer p{margin:.55em 0}.answer ul{padding-left:1.2em;margin:.4em 0}.answer li{margin:.25em 0}.answer h3,.answer h4{margin:.8em 0 .3em;color:var(--dark)}
 .answer code{background:#effcf8;padding:1px 5px;border-radius:5px}
 .cite{display:inline-block;font-size:11px;font-weight:700;min-width:18px;text-align:center;padding:0 4px;margin:0 1px;border-radius:6px;background:#dcfaf2;color:var(--em);text-decoration:none;vertical-align:1px}

@@ -1,13 +1,13 @@
 # TTu — AI search by Hadtah
 
 TTu is a chat-style AI that answers anything (general knowledge, school and academic questions, research, and what a public
-account posted on a given day) using **only open, free sources**, always shows numbered source links, and puts a
+account posted on a given day) using **open, free sources plus Google Search**, always shows numbered source links, and puts a
 **Download as PDF** button under every answer.
 
 - **Sign-in:** Gmail address + 6-digit email code (only `@gmail.com` / `@googlemail.com`). No Google OAuth setup needed.
 - **Limits:** 15 questions/tasks per day (reset at midnight Africa/Kampala). 20 free PDF downloads, then the **weekly plan, US$0.81/week** (or UGX 3,000 by mobile money) through Flutterwave.
-- **Sources:** Wikipedia, OpenAlex (250M+ papers), arXiv, Crossref, Bluesky (public AppView), Mastodon (public API), Reddit (public JSON / app-only OAuth), and optional YouTube Data API and Google Programmable Search. No scraping of closed platforms (Instagram, TikTok, Facebook, dating apps). **Videos are never downloaded**, only shown as links or official YouTube embeds.
-- **AI:** Google Gemini (`gemini-3.1-flash-lite`) through Gemini's OpenAI-compatible endpoint. With no key, TTu runs in **demo mode**: it builds an extractive summary straight from the fetched sources (clearly badged "Demo mode").
+- **Sources:** Wikipedia, OpenAlex (250M+ papers), arXiv, Crossref, Bluesky (public AppView), Mastodon (public API), Reddit (public JSON / app-only OAuth), **Google Search grounding** (when an AI key is set), and optional YouTube Data API and Google Programmable Search. No scraping of closed platforms (Instagram, TikTok, Facebook, dating apps). **Videos are never downloaded**, only shown as links or official YouTube embeds.
+- **AI:** Google Gemini (`gemini-3.1-flash-lite`) through the native `generateContent` API, with **Google Search grounding**. Gathered open sources are passed in as extra context, and grounded web pages are merged into the cited source list. If grounding hits a free-tier quota (HTTP 429) or fails, TTu retries without search (and, if needed, via Gemini's OpenAI-compatible endpoint) rather than erroring. With no key, TTu runs in **demo mode**: it builds an extractive summary straight from the fetched sources (clearly badged "Demo mode").
 - **Platforms:** installable PWA (Android + desktop), Capacitor/TWA wrapper for an APK (`android/`), and an Electron shell for a Windows `.exe` installer (`desktop/`).
 
 ## Live test (Cloudflare)
@@ -23,7 +23,7 @@ Gmail address in this mode, so don't use it for real users. At launch: set `RESE
 npm install
 npx wrangler d1 migrations apply ttu --remote     # create/upgrade tables in D1
 openssl rand -hex 32 | npx wrangler secret put SESSION_SECRET
-npx wrangler secret put AI_API_KEY                # optional: real AI answers (Gemini)
+npx wrangler secret put AI_API_KEY                # real AI answers + Google Search grounding (Gemini)
 npx wrangler deploy
 ```
 
@@ -54,7 +54,7 @@ worker.js            Cloudflare Workers entry (D1 + static assets)
 server.js            Node entry (node:sqlite + static files)
 lib/app.js           Hono routes: auth, ask, PDF allowance, payments
 lib/sources.js       open-source connectors + intent detection (general vs "posts by X on <date>")
-lib/ai.js            Gemini/OpenAI-compatible synthesis + demo-mode extractive summary
+lib/ai.js            Gemini generateContent synthesis, Google Search grounding, demo-mode extractive summary
 public/pdf.js        PDFKit in the browser: TTu header, answer, images, clickable sources, footer
 lib/auth.js          Gmail-only email-code sign-in (hashed codes, 10-min expiry, 5 tries, rate limits), sessions
 lib/mail.js          Resend or SMTP sender (or console in dev)
@@ -75,7 +75,7 @@ See `.env.example` for the full list. The important ones:
 | Variable | Needed for | Notes |
 |---|---|---|
 | `APP_ENV=production`, `APP_URL`, `SESSION_SECRET` | going live | `APP_URL` is used for Flutterwave redirects. `SESSION_SECRET`: `openssl rand -hex 32` |
-| `AI_API_KEY` (+ `AI_BASE_URL`, `AI_MODEL`) | real AI answers | Defaults: Gemini OpenAI-compatible endpoint, `gemini-3.1-flash-lite` |
+| `AI_API_KEY` (+ `AI_BASE_URL`, `AI_MODEL`) | real AI answers + Google Search grounding | Defaults: native Gemini `generateContent` API, `gemini-3.1-flash-lite`. Grounding falls back automatically if the search quota is hit. |
 | `RESEND_API_KEY` + `RESEND_FROM` **or** `SMTP_*` | emailing sign-in codes | Without either, codes only go to the server log, so real users can't sign in |
 | `FLW_PUBLIC_KEY`, `FLW_SECRET_KEY`, `FLW_SECRET_HASH` | weekly plan payments | Without them the paywall says "Payments are not configured yet" |
 | `YOUTUBE_API_KEY`, `GOOGLE_CSE_KEY`/`GOOGLE_CSE_ID`, `OPENALEX_API_KEY`, `REDDIT_CLIENT_ID`/`SECRET` | optional extra sources | Each source is skipped gracefully when its key is missing |

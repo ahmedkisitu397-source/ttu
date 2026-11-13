@@ -37,7 +37,7 @@ function setUsage(u) {
   pill.textContent = `${u.questionsLeft}/${u.dailyLimit} today`;
   $('#menuUsage').innerHTML = `${u.questionsLeft} of ${u.dailyLimit} questions left today (resets midnight, Kampala)<br>` +
     (u.subscribed ? `Weekly plan active until ${new Date(u.subscribedUntil).toLocaleDateString('en-GB', { timeZone: 'Africa/Kampala', day: 'numeric', month: 'short' })}` : `${u.freeDownloadsLeft} of ${u.freeDownloads} free PDF downloads left`);
-  $('#composerNote').textContent = u.questionsLeft ? `${u.questionsLeft} question${u.questionsLeft === 1 ? '' : 's'} left today · answers come from open sources — check the links` : 'Daily limit reached — your 15 questions reset at midnight (Kampala time).';
+  $('#composerNote').textContent = u.questionsLeft ? `${u.questionsLeft} question${u.questionsLeft === 1 ? '' : 's'} left today · answers come from open sources and the web — check the links` : 'Daily limit reached — your 15 questions reset at midnight (Kampala time).';
 }
 
 async function boot() {
@@ -100,7 +100,7 @@ $('#ask').addEventListener('submit', async (e) => {
   const q = qa.value.trim(); if (!q) return;
   $('#empty').classList.add('hidden');
   const turn = document.createElement('div'); turn.className = 'turn';
-  turn.innerHTML = `<div class="q-bubble">${esc(q)}</div><div class="a-card"><div class="typing"><span class="dots"><span></span><span></span><span></span></span> Searching open sources…</div></div>`;
+  turn.innerHTML = `<div class="q-bubble">${esc(q)}</div><div class="a-card"><div class="typing"><span class="dots"><span></span><span></span><span></span></span> Searching open sources and the web…</div></div>`;
   $('#thread').appendChild(turn); turn.scrollIntoView({ behavior: 'smooth', block: 'start' });
   qa.value = ''; qa.style.height = 'auto'; $('.send').disabled = true;
   const r = await api('/api/ask', { method: 'POST', body: JSON.stringify({ q }) });
@@ -118,7 +118,7 @@ function renderAnswer(card, a) {
     : `<a class="vid" href="${esc(safeUrl(v.url))}" target="_blank" rel="noopener"><span class="play">▶</span><span>${esc(v.note || 'Watch video')} <span class="muted">[${v.ref}] — videos can't be downloaded in TTu</span></span></a>`).join('');
   const list = srcs.map((s, i) => `<li><span class="n">${i + 1}</span><span><span class="src">${esc(s.source)}</span><a href="${esc(safeUrl(s.url))}" target="_blank" rel="noopener">${esc(s.title)}</a>
     <div class="meta">${esc([s.author, s.date ? String(s.date).slice(0, 10) : '', s.extra].filter(Boolean).join(' · '))}</div></span></li>`).join('');
-  card.innerHTML = `<div class="a-head"><img src="/icons/icon-32.png" width="22" height="22" alt="">TTu ${a.mode === 'demo' ? '<span class="badge" title="No AI key configured — summary built directly from the sources">Demo mode</span>' : ''}</div>
+  card.innerHTML = `<div class="a-head"><img src="/icons/icon-32.png" width="22" height="22" alt="">TTu ${a.mode === 'demo' ? '<span class="badge" title="No AI key configured — summary built directly from the sources">Demo mode</span>' : a.grounded ? '<span class="badge web" title="Answer includes Google Search results">Web</span>' : ''}</div>
     <div class="answer">${md(a.answer, srcs)}</div>
     ${imgs ? `<div class="imgs">${imgs}</div>` : ''}${vids ? `<div class="vids">${vids}</div>` : ''}
     ${list ? `<div class="srcs"><h4>SOURCES</h4><ol>${list}</ol></div>` : ''}
