@@ -1,0 +1,11 @@
+{
+  "appId": "com.hadtah.ttu",
+  "appName": "TTu",
+  "webDir": "www",
+  "server": {
+    "url": "https://ttu.hadtah.com",
+    "cleartext": false,
+    "androidScheme": "https"
+  },
+  "android": { "allowMixedContent": false, "backgroundColor": "#f6fbf9" }
+}

@@ -1,0 +1,9 @@
+node_modules/
+data/
+.env
+*.db
+android/android/
+android/www/
+desktop/dist/
+.wrangler/
+.dev.vars

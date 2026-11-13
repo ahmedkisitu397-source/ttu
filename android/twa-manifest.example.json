@@ -1,0 +1,18 @@
+{
+  "packageId": "com.hadtah.ttu",
+  "host": "ttu.hadtah.com",
+  "name": "TTu — AI search by Hadtah",
+  "launcherName": "TTu",
+  "display": "standalone",
+  "themeColor": "#0f9f8a",
+  "navigationColor": "#064e3b",
+  "backgroundColor": "#f6fbf9",
+  "enableNotifications": false,
+  "startUrl": "/?source=twa",
+  "iconUrl": "https://ttu.hadtah.com/icons/icon-512.png",
+  "maskableIconUrl": "https://ttu.hadtah.com/icons/maskable-512.png",
+  "webManifestUrl": "https://ttu.hadtah.com/manifest.webmanifest",
+  "signingKey": { "path": "./ttu-release.keystore", "alias": "ttu" },
+  "appVersionName": "0.1.0",
+  "appVersionCode": 1
+}

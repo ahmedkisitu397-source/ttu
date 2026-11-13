@@ -1,0 +1,37 @@
+{
+  "name": "ttu",
+  "version": "0.1.0",
+  "description": "TTu - AI search by Hadtah",
+  "main": "worker.js",
+  "scripts": {
+    "start": "node --env-file-if-exists=.env server.js",
+    "dev": "node --env-file-if-exists=.env --watch server.js",
+    "cf:dev": "wrangler dev",
+    "cf:deploy": "wrangler deploy",
+    "cf:migrate": "wrangler d1 migrations apply ttu --remote",
+    "icons": "node scripts/icons.mjs",
+    "e2e": "node scripts/e2e.mjs"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "dependencies": {
+    "@hono/node-server": "^2.1.8",
+    "hono": "^4.13.18",
+    "nodemailer": "^10.5.0"
+  },
+  "devDependencies": {
+    "playwright": "^1.65.0",
+    "sharp": "^0.35.5",
+    "wrangler": "^4.161.0"
+  },
+  "engines": {
+    "node": ">=22.13"
+  },
+  "allowScripts": {
+    "workerd@1.20261110.1": true,
+    "esbuild@0.28.2": true,
+    "sharp@0.35.5": true
+  }
+}

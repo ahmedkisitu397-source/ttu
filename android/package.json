@@ -1,0 +1,14 @@
+{
+  "name": "ttu-android",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Capacitor wrapper that loads the hosted TTu PWA. Build steps in android/README.md",
+  "scripts": {
+    "setup": "mkdir -p www && cp ../public/offline.html www/index.html && npx cap add android && npx @capacitor/assets generate --android --iconBackgroundColor '#14b8a6' --assetPath ../public/icons",
+    "sync": "npx cap sync android",
+    "apk:debug": "npx cap sync android && cd android && ./gradlew assembleDebug",
+    "aab:release": "npx cap sync android && cd android && ./gradlew bundleRelease"
+  },
+  "dependencies": { "@capacitor/android": "^7.0.0", "@capacitor/core": "^7.0.0" },
+  "devDependencies": { "@capacitor/cli": "^7.0.0", "@capacitor/assets": "^3.0.0" }
+}

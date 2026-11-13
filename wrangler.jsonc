@@ -1,0 +1,27 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "ttu",
+  "main": "worker.js",
+  "compatibility_date": "2026-11-01",
+  "compatibility_flags": ["nodejs_compat"],
+  "workers_dev": true,
+  "preview_urls": false,
+  "assets": {
+    "directory": "./public",
+    "binding": "ASSETS",
+    "html_handling": "auto-trailing-slash",
+    "not_found_handling": "single-page-application",
+    "run_worker_first": ["/api/*", "/healthz"]
+  },
+  "alias": { "nodemailer": "./stubs/nodemailer.js" },
+  "d1_databases": [
+    { "binding": "DB", "database_name": "ttu", "database_id": "62c70f6a-378b-428c-8f18-b48b96f027c6", "migrations_dir": "migrations" }
+  ],
+  "vars": {
+    // TEST MODE: anything other than "production" shows the sign-in code on screen (no email service yet)
+    // and enables the "Activate test week" button. Set to "production" at launch, with RESEND_API_KEY/RESEND_FROM.
+    "APP_ENV": "test",
+    "APP_URL": "https://ttu.hadtah.workers.dev"
+  },
+  "observability": { "enabled": true }
+}

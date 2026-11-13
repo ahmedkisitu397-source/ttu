@@ -1,0 +1,37 @@
+// Browser check for the Cloudflare (test-mode) deployment: sign in with the on-screen test code, ask, download the PDF.
+// Usage: BASE=https://ttu.hadtah.workers.dev SHOTS=../shots-cf node scripts/e2e-cf.mjs
+import { chromium } from 'playwright';
+import fs from 'node:fs';
+const BASE = process.env.BASE || 'http://localhost:8799';
+const SHOTS = process.env.SHOTS || '../shots-cf';
+fs.mkdirSync(SHOTS, { recursive: true });
+const log = (...a) => console.log('•', ...a);
+const browser = await chromium.launch();
+const ctx = await browser.newContext({ viewport: { width: 1280, height: 860 }, acceptDownloads: true });
+const page = await ctx.newPage();
+page.on('console', (m) => m.type() === 'error' && log('console error:', m.text()));
+const user = process.env.TTU_USER || `ttutest${Date.now() % 100000}@gmail.com`;
+await page.goto(BASE); await page.waitForSelector('#signin:not(.hidden)');
+await page.screenshot({ path: `${SHOTS}/01-signin.png` });
+await page.fill('#email', user); await page.click('#emailForm button');
+await page.waitForSelector('#codeForm:not(.hidden)');
+await page.waitForSelector('#devNotice .dev-code');
+const code = (await page.textContent('#devNotice .dev-code')).match(/\d{6}/)[0];
+await page.screenshot({ path: `${SHOTS}/02-test-mode-code.png` });
+await page.fill('#code', code); await page.click('#codeForm button[type=submit]');
+await page.waitForSelector('#chat:not(.hidden)');
+log('signed in as', user);
+const q = process.env.Q || 'Explain photosynthesis';
+await page.fill('#q', q); await page.press('#q', 'Enter');
+await page.waitForFunction(() => { const t = document.querySelector('.turn'); return t && !t.querySelector('.typing'); }, null, { timeout: 90000 });
+const turn = page.locator('.turn').first();
+log('answer:', (await turn.locator('.answer').textContent()).slice(0, 160).replace(/\s+/g, ' '), '| sources:', await turn.locator('.srcs li').count());
+await page.evaluate(() => document.querySelector('.turn').scrollIntoView({ block: 'start' })); await page.waitForTimeout(1200);
+await page.screenshot({ path: `${SHOTS}/03-answer.png` });
+await page.evaluate(() => document.querySelector('.turn .a-actions').scrollIntoView({ block: 'end' })); await page.waitForTimeout(400);
+await page.screenshot({ path: `${SHOTS}/04-download-button.png` });
+const [dl] = await Promise.all([page.waitForEvent('download', { timeout: 60000 }), turn.locator('button.pdf-btn', { hasText: 'Download as PDF' }).click()]);
+const out = `${SHOTS}/sample-answer.pdf`; await dl.saveAs(out);
+log('PDF saved', out, fs.statSync(out).size, 'bytes', '| note:', await turn.locator('.dl-note').textContent());
+fs.writeFileSync(`${SHOTS}/user.txt`, user);
+await browser.close();
