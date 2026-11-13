@@ -1,5 +1,5 @@
 {
-  "name": "TTu — AI search by Hadtah",
+  "name": "TTu",
   "short_name": "TTu",
   "description": "Ask anything. Answers from open sources, with a PDF of every answer.",
   "id": "/",
@@ -7,10 +7,11 @@
   "scope": "/",
   "display": "standalone",
   "orientation": "any",
-  "background_color": "#f6fbf9",
-  "theme_color": "#0f9f8a",
+  "background_color": "#0a0a0a",
+  "theme_color": "#0a0a0a",
   "categories": ["education", "productivity", "reference"],
   "icons": [
+    { "src": "/icons/apple-touch-icon.png", "sizes": "180x180", "type": "image/png", "purpose": "any" },
     { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
     { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
     { "src": "/icons/maskable-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
