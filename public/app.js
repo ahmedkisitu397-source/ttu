@@ -58,11 +58,7 @@ function applyTheme(theme) {
   const meta = document.getElementById('themeColor');
   if (meta) meta.setAttribute('content', t === 'light' ? '#f5f5f5' : '#0a0a0a');
   const btn = document.getElementById('themeBtn');
-  const sun = document.getElementById('themeIconSun');
-  const moon = document.getElementById('themeIconMoon');
   if (btn) btn.setAttribute('aria-label', t === 'dark' ? 'Switch to light theme' : 'Switch to dark theme');
-  if (sun) sun.hidden = t === 'dark';
-  if (moon) moon.hidden = t === 'light';
 }
 (function initTheme() {
   let t = 'dark';
