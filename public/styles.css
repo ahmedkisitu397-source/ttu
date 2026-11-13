@@ -1,8 +1,4 @@
-/* TTu — monochrome theme. Calibri first (Windows), self-hosted Carlito elsewhere. */
-@font-face{font-family:Carlito;src:url("/fonts/Carlito-Regular.woff2") format("woff2"),url("/fonts/Carlito-Regular.woff") format("woff");font-weight:400;font-style:normal;font-display:swap}
-@font-face{font-family:Carlito;src:url("/fonts/Carlito-Italic.woff2") format("woff2"),url("/fonts/Carlito-Italic.woff") format("woff");font-weight:400;font-style:italic;font-display:swap}
-@font-face{font-family:Carlito;src:url("/fonts/Carlito-Bold.woff2") format("woff2"),url("/fonts/Carlito-Bold.woff") format("woff");font-weight:700;font-style:normal;font-display:swap}
-@font-face{font-family:Carlito;src:url("/fonts/Carlito-BoldItalic.woff2") format("woff2"),url("/fonts/Carlito-BoldItalic.woff") format("woff");font-weight:700;font-style:italic;font-display:swap}
+/* TTu — monochrome theme, native system font on every device (PDFs keep their embedded Carlito font). */
 
 :root,[data-theme="dark"]{
   color-scheme:dark;
@@ -32,8 +28,8 @@ html,body{margin:0;height:100%}
 body:has(main.chat),body:has(main.signin){overflow:hidden}
 html{background:var(--bg)}
 body{
-  font-family:Calibri,Carlito,"Segoe UI",Arial,sans-serif;
-  font-size:16.5px;line-height:1.55;color:var(--ink);background:var(--bg);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,"Noto Sans",sans-serif;
+  font-size:16px;line-height:1.6;letter-spacing:-.005em;color:var(--ink);background:var(--bg);
   -webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;
   display:flex;flex-direction:column;min-height:100dvh;
 }
@@ -285,3 +281,13 @@ dialog::backdrop{background:rgba(0,0,0,.62)}
 /* Focus for keyboard users */
 :focus-visible{outline:2px solid var(--focus);outline-offset:3px}
 button:focus:not(:focus-visible),input:focus:not(:focus-visible),textarea:focus:not(:focus-visible){outline:none}
+
+/* ---------- refined monochrome polish ---------- */
+body{background-image:radial-gradient(900px 420px at 50% -180px,color-mix(in srgb,var(--ink) 7%,transparent),transparent 70%);background-repeat:no-repeat}
+.card{border-radius:28px;box-shadow:0 1px 0 color-mix(in srgb,var(--ink) 6%,transparent) inset,var(--shadow)}
+.card h1,.empty h2{letter-spacing:-.03em}
+.brand{letter-spacing:-.03em}
+.btn{letter-spacing:-.005em}
+.btn.primary:hover{transform:translateY(-1px)}
+input{transition:border-color .15s,box-shadow .2s,background .2s}
+.top{border-bottom-color:color-mix(in srgb,var(--line) 70%,transparent)}
