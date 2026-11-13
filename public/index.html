@@ -1,21 +1,29 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>TTu — AI search by Hadtah</title>
 <meta name="description" content="TTu answers anything — general knowledge, research papers and public posts — from open sources, with a PDF of every answer.">
-<meta name="theme-color" content="#0f9f8a">
+<meta name="theme-color" content="#0a0a0a" id="themeColor">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/favicon.png">
 <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+<link rel="preload" href="/fonts/Carlito-Regular.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="/styles.css">
+<script>
+(function(){try{var t=localStorage.getItem('ttu-theme');document.documentElement.setAttribute('data-theme',t==='light'?'light':'dark');}catch(e){document.documentElement.setAttribute('data-theme','dark');}}());
+</script>
 </head>
 <body>
 <header class="top">
-  <a class="brand" href="/" aria-label="TTu home"><img src="/icons/icon-64.png" alt="" width="34" height="34"><span>TTu</span></a>
+  <a class="brand" href="/" aria-label="TTu home"><img src="/icons/logo-mark-64.png" alt="" width="34" height="34"><span>TTu</span></a>
   <div class="top-right">
     <span id="usagePill" class="pill hidden" title="Questions left today"></span>
+    <button id="themeBtn" class="theme-toggle" type="button" aria-label="Switch to light theme" title="Theme">
+      <svg id="themeIconMoon" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M12.7 2.3a1 1 0 0 0-1.2.2A9 9 0 1 0 21.5 12a1 1 0 0 0-1.3-1 7 7 0 0 1-7.5-8.7z"/></svg>
+      <svg id="themeIconSun" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" hidden><path fill="currentColor" d="M12 4.5a1 1 0 0 0 1-1V2a1 1 0 1 0-2 0v1.5a1 1 0 0 0 1 1zm0 15a1 1 0 0 0-1 1V22a1 1 0 1 0 2 0v-1.5a1 1 0 0 0-1-1zM5.05 6.46A1 1 0 0 0 6.46 5.05L5.4 4A1 1 0 0 0 4 5.4zm12.49 12.49a1 1 0 0 0 1.41 0L20 17.9A1 1 0 1 0 18.59 16.5zM4.5 12a1 1 0 0 0-1-1H2a1 1 0 1 0 0 2h1.5a1 1 0 0 0 1-1zm17.5-1h-1.5a1 1 0 1 0 0 2H22a1 1 0 1 0 0-2zM5.05 17.54 4 18.6A1 1 0 1 0 5.4 20l1.06-1.06A1 1 0 0 0 5.05 17.54zM18.59 5.05 17.54 4A1 1 0 1 0 16.12 5.4L17.2 6.46A1 1 0 0 0 18.59 5.05zM12 7a5 5 0 1 0 0 10 5 5 0 0 0 0-10z"/></svg>
+    </button>
     <button id="menuBtn" class="avatar hidden" aria-label="Account menu"></button>
   </div>
   <div id="menu" class="menu hidden" role="menu">
@@ -31,7 +39,7 @@
 
 <main id="signin" class="signin hidden">
   <div class="card">
-    <img src="/icons/icon-192.png" alt="TTu" class="hero-icon" width="96" height="96">
+    <img src="/icons/logo-mark-192.png" alt="TTu" class="hero-icon" width="96" height="96">
     <h1>Welcome to TTu</h1>
     <p class="muted">Ask anything. TTu searches open sources — encyclopaedias, research papers and public posts — and writes you a clear answer you can save as a PDF.</p>
     <form id="emailForm" autocomplete="on">
@@ -54,7 +62,7 @@
 <main id="chat" class="chat hidden">
   <div id="thread" class="thread" aria-live="polite">
     <section id="empty" class="empty">
-      <img src="/icons/icon-192.png" alt="" width="72" height="72">
+      <img src="/icons/logo-mark-192.png" alt="" width="72" height="72">
       <h2>What would you like to know?</h2>
       <p class="muted">Research, school work, news, or what a public account posted on a given day.</p>
       <div class="suggest">
@@ -74,7 +82,7 @@
 
 <dialog id="paywall" class="sheet">
   <form method="dialog" class="close-row"><button aria-label="Close">✕</button></form>
-  <img src="/icons/icon-128.png" alt="" width="64" height="64">
+  <img src="/icons/logo-mark-128.png" alt="" width="64" height="64">
   <h2>TTu weekly plan</h2>
   <p class="price"><b id="pwUsd">US$0.81</b> / week</p>
   <ul class="perks"><li>Unlimited <b>Download as PDF</b> for 7 days</li><li>Still 15 questions a day</li><li>Pay with mobile money (MTN, Airtel) or card</li></ul>
@@ -86,7 +94,7 @@
   <div id="pwNotConfigured" class="notice hidden">Payments are not configured yet. The Flutterwave keys still need to be added on the server.</div>
   <div id="pwDev" class="notice dev hidden">
     <b>Dev mode:</b> test the paywall without paying.
-    <div class="row"><button class="btn small" id="devSubOn">Activate test week</button><button class="btn small outline" id="devSubOff">Cancel test week</button></div>
+    <div class="row"><button class="btn small primary" id="devSubOn">Activate test week</button><button class="btn small outline" id="devSubOff">Cancel test week</button></div>
   </div>
   <p class="fine">Secure checkout by Flutterwave. Your plan starts as soon as the payment is confirmed.</p>
 </dialog>

@@ -49,6 +49,32 @@ async function boot() {
   if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(() => {});
 }
 
+
+// ---------- Theme (dark default, persisted) ----------
+function applyTheme(theme) {
+  const t = theme === 'light' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', t);
+  try { localStorage.setItem('ttu-theme', t); } catch {}
+  const meta = document.getElementById('themeColor');
+  if (meta) meta.setAttribute('content', t === 'light' ? '#f5f5f5' : '#0a0a0a');
+  const btn = document.getElementById('themeBtn');
+  const sun = document.getElementById('themeIconSun');
+  const moon = document.getElementById('themeIconMoon');
+  if (btn) btn.setAttribute('aria-label', t === 'dark' ? 'Switch to light theme' : 'Switch to dark theme');
+  if (sun) sun.hidden = t === 'dark';
+  if (moon) moon.hidden = t === 'light';
+}
+(function initTheme() {
+  let t = 'dark';
+  try { t = localStorage.getItem('ttu-theme') === 'light' ? 'light' : 'dark'; } catch {}
+  applyTheme(t);
+  const btn = document.getElementById('themeBtn');
+  if (btn) btn.addEventListener('click', () => {
+    const next = document.documentElement.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+    applyTheme(next);
+  });
+})();
+
 // ---------- Sign-in ----------
 function showSignin() {
   $('#signin').classList.remove('hidden'); $('#chat').classList.add('hidden');
@@ -118,7 +144,7 @@ function renderAnswer(card, a) {
     : `<a class="vid" href="${esc(safeUrl(v.url))}" target="_blank" rel="noopener"><span class="play">▶</span><span>${esc(v.note || 'Watch video')} <span class="muted">[${v.ref}] — videos can't be downloaded in TTu</span></span></a>`).join('');
   const list = srcs.map((s, i) => `<li><span class="n">${i + 1}</span><span><span class="src">${esc(s.source)}</span><a href="${esc(safeUrl(s.url))}" target="_blank" rel="noopener">${esc(s.title)}</a>
     <div class="meta">${esc([s.author, s.date ? String(s.date).slice(0, 10) : '', s.extra].filter(Boolean).join(' · '))}</div></span></li>`).join('');
-  card.innerHTML = `<div class="a-head"><img src="/icons/icon-32.png" width="22" height="22" alt="">TTu ${a.mode === 'demo' ? '<span class="badge" title="No AI key configured — summary built directly from the sources">Demo mode</span>' : a.grounded ? '<span class="badge web" title="Answer includes Google Search results">Web</span>' : ''}</div>
+  card.innerHTML = `<div class="a-head"><img src="/icons/logo-mark-32.png" width="22" height="22" alt="">TTu ${a.mode === 'demo' ? '<span class="badge" title="No AI key configured — summary built directly from the sources">Demo mode</span>' : a.grounded ? '<span class="badge web" title="Answer includes Google Search results">Web</span>' : ''}</div>
     <div class="answer">${md(a.answer, srcs)}</div>
     ${imgs ? `<div class="imgs">${imgs}</div>` : ''}${vids ? `<div class="vids">${vids}</div>` : ''}
     ${list ? `<div class="srcs"><h4>SOURCES</h4><ol>${list}</ol></div>` : ''}

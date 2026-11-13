@@ -1,3 +1,20 @@
-<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>TTu — offline</title>
-<body style="font-family:system-ui,sans-serif;display:grid;place-items:center;min-height:100vh;margin:0;background:#f6fbf9;color:#064e3b;text-align:center">
-<div><img src="/icons/icon-128.png" width="80" style="border-radius:18px"><h2>You're offline</h2><p>TTu needs internet to search. Reconnect and try again.</p></div></body>
+<!doctype html>
+<html lang="en" data-theme="dark">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#0a0a0a">
+<title>TTu — offline</title>
+<link rel="stylesheet" href="/styles.css">
+<script>
+(function(){try{var t=localStorage.getItem('ttu-theme');document.documentElement.setAttribute('data-theme',t==='light'?'light':'dark');}catch(e){document.documentElement.setAttribute('data-theme','dark');}}());
+</script>
+<body>
+<main class="signin">
+  <div class="card">
+    <img src="/icons/logo-mark-128.png" width="80" height="80" alt="" class="hero-icon">
+    <h1>You're offline</h1>
+    <p class="muted">TTu needs internet to search. Reconnect and try again.</p>
+  </div>
+</main>
+</body>
+</html>

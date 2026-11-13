@@ -1,6 +1,6 @@
 // Builds a neat PDF of one answer in the browser with PDFKit (same layout as the old server-side version):
 // TTu header, question, answer text, images (thumbnails), numbered clickable sources, footer on every page.
-const TEAL = '#0d9488', EMERALD = '#059669', DARK = '#064e3b', MUTED = '#4b5563';
+const INK = '#111111', MUTED = '#555555', RULE = '#d0d0d0', ACCENT = '#111111';
 
 let pdfkitPromise;
 function loadPdfKit() {
@@ -33,10 +33,10 @@ function richText(doc, text, opts = {}, x, y) {
   const parts = text.split(/(\*\*[^*]+\*\*|\*[^*]+\*|_[^_]+_|`[^`]+`)/g).filter((p) => p !== '');
   parts.forEach((p, i) => {
     const last = i === parts.length - 1;
-    let font = 'Regular', s = p, color = DARK;
+    let font = 'Regular', s = p, color = INK;
     if (/^\*\*.*\*\*$/.test(p)) { font = 'Bold'; s = p.slice(2, -2); }
     else if (/^(\*[^*]+\*|_[^_]+_)$/.test(p)) { s = p.slice(1, -1); color = MUTED; }
-    else if (/^`.*`$/.test(p)) { s = p.slice(1, -1); color = TEAL; }
+    else if (/^`.*`$/.test(p)) { s = p.slice(1, -1); color = INK; }
     if (i === 0 && x != null) doc.font(font).fillColor(color).text(s, x, y, { ...opts, continued: !last });
     else doc.font(font).fillColor(color).text(s, { ...opts, continued: !last });
   });
@@ -44,7 +44,11 @@ function richText(doc, text, opts = {}, x, y) {
 
 export async function buildPdf(ans, user) {
   const PDFDocument = await loadPdfKit();
-  const [reg, bold, icon] = await Promise.all([bin('/fonts/DejaVuSans.ttf'), bin('/fonts/DejaVuSans-Bold.ttf'), bin('/icons/pdf-icon.png')]);
+  const [reg, bold, icon] = await Promise.all([
+    bin('/fonts/Carlito-Regular.ttf').catch(() => bin('/fonts/DejaVuSans.ttf')),
+    bin('/fonts/Carlito-Bold.ttf').catch(() => bin('/fonts/DejaVuSans-Bold.ttf')),
+    bin('/icons/logo-mark-128.png').catch(() => bin('/icons/pdf-icon.png')),
+  ]);
   const sources = ans.sources || [];
   const images = ans.images || [];
   const doc = new PDFDocument({ size: 'A4', margins: { top: 50, bottom: 60, left: 54, right: 54 }, bufferPages: true,
@@ -55,33 +59,32 @@ export async function buildPdf(ans, user) {
   const done = new Promise((res) => doc.on('end', () => res(new Blob(chunks, { type: 'application/pdf' }))));
   const W = doc.page.width - 108;
 
-  // Header band
-  const grad = doc.linearGradient(0, 0, doc.page.width, 0); grad.stop(0, '#2dd4bf').stop(1, EMERALD);
-  doc.rect(0, 0, doc.page.width, 78).fill(grad);
+  // Header band — black and white
+  doc.rect(0, 0, doc.page.width, 78).fill('#111111');
   doc.image(icon, 54, 15, { width: 48, height: 48 });
   doc.font('Bold').fontSize(22).fillColor('#ffffff').text('TTu', 112, 20);
-  doc.font('Regular').fontSize(9).fillColor('#ecfdf5').text('AI search by Hadtah · hadtah.com', 112, 48);
+  doc.font('Regular').fontSize(9).fillColor('#e8e8e8').text('AI search by Hadtah · hadtah.com', 112, 48);
   const when = new Intl.DateTimeFormat('en-GB', { timeZone: 'Africa/Kampala', dateStyle: 'medium', timeStyle: 'short' }).format(new Date(ans.created_at));
   doc.fontSize(9).text(`${when} (Kampala time)`, 54, 30, { width: W, align: 'right' });
   doc.y = 100;
 
-  doc.font('Bold').fontSize(9).fillColor(TEAL).text('QUESTION', 54);
-  doc.moveDown(0.2).font('Bold').fontSize(15).fillColor(DARK).text(ans.question, { width: W });
+  doc.font('Bold').fontSize(9).fillColor(INK).text('QUESTION', 54);
+  doc.moveDown(0.2).font('Bold').fontSize(15).fillColor(INK).text(ans.question, { width: W });
   doc.moveDown(0.6);
-  doc.moveTo(54, doc.y).lineTo(54 + W, doc.y).lineWidth(0.8).strokeColor('#99f6e4').stroke();
+  doc.moveTo(54, doc.y).lineTo(54 + W, doc.y).lineWidth(0.8).strokeColor(RULE).stroke();
   doc.moveDown(0.8);
 
-  doc.font('Bold').fontSize(9).fillColor(TEAL).text('ANSWER');
+  doc.font('Bold').fontSize(9).fillColor(INK).text('ANSWER');
   doc.moveDown(0.3).fontSize(10.5);
   for (const raw of ans.answer.split('\n')) {
     const line = raw.trimEnd();
     if (!line.trim()) { doc.moveDown(0.45); continue; }
     const h = line.match(/^#{1,4}\s+(.*)/);
-    if (h) { doc.moveDown(0.3).font('Bold').fontSize(12).fillColor(DARK).text(h[1].replace(/\*\*/g, '')).fontSize(10.5).moveDown(0.15); continue; }
+    if (h) { doc.moveDown(0.3).font('Bold').fontSize(12).fillColor(INK).text(h[1].replace(/\*\*/g, '')).fontSize(10.5).moveDown(0.15); continue; }
     const b = line.match(/^\s*(?:[-*•]|\d+\.)\s+(.*)/);
     if (b) {
       const y = doc.y;
-      doc.font('Bold').fillColor(EMERALD).text('•', 60, y, { width: 10 });
+      doc.font('Bold').fillColor(INK).text('•', 60, y, { width: 10 });
       richText(doc, b[1], { width: W - 18, lineGap: 2 }, 72, y);
       doc.x = 54; doc.moveDown(0.15); continue;
     }
@@ -93,7 +96,7 @@ export async function buildPdf(ans, user) {
   if (imgs.length) {
     doc.moveDown(1);
     if (doc.y > doc.page.height - 260) doc.addPage();
-    doc.font('Bold').fontSize(9).fillColor(TEAL).text('IMAGES', 54);
+    doc.font('Bold').fontSize(9).fillColor(INK).text('IMAGES', 54);
     doc.moveDown(0.4);
     const colW = (W - 14) / 2, maxH = 170;
     for (let i = 0; i < imgs.length; i += 2) {
@@ -114,13 +117,13 @@ export async function buildPdf(ans, user) {
   // Sources
   doc.moveDown(1);
   if (doc.y > doc.page.height - 140) doc.addPage();
-  doc.font('Bold').fontSize(9).fillColor(TEAL).text('SOURCES', 54);
+  doc.font('Bold').fontSize(9).fillColor(INK).text('SOURCES', 54);
   doc.moveDown(0.3);
   sources.forEach((s, i) => {
     if (doc.y > doc.page.height - 90) doc.addPage();
-    doc.font('Bold').fontSize(9).fillColor(DARK).text(`[${i + 1}] `, 54, doc.y, { continued: true })
+    doc.font('Bold').fontSize(9).fillColor(INK).text(`[${i + 1}] `, 54, doc.y, { continued: true })
       .font('Regular').text(`${s.source} — ${s.title}${s.author ? ` · ${s.author}` : ''}${s.date ? ` · ${String(s.date).slice(0, 10)}` : ''}${s.video ? ' · video (watch online)' : ''}`, { width: W });
-    doc.font('Regular').fontSize(8.5).fillColor(TEAL).text(s.url, 70, doc.y, { width: W - 16, link: s.url, underline: true });
+    doc.font('Regular').fontSize(8.5).fillColor(INK).text(s.url, 70, doc.y, { width: W - 16, link: s.url, underline: true });
     doc.x = 54; doc.moveDown(0.35);
   });
 
@@ -130,7 +133,7 @@ export async function buildPdf(ans, user) {
     doc.switchToPage(p);
     const oldBottom = doc.page.margins.bottom; doc.page.margins.bottom = 0; // writing in the footer zone must not add pages
     const y = doc.page.height - 40;
-    doc.moveTo(54, y - 6).lineTo(54 + W, y - 6).lineWidth(0.5).strokeColor('#d1fae5').stroke();
+    doc.moveTo(54, y - 6).lineTo(54 + W, y - 6).lineWidth(0.5).strokeColor(RULE).stroke();
     doc.font('Regular').fontSize(7.5).fillColor(MUTED)
       .text(`Generated by TTu for ${user.email}. Answers are AI-assisted summaries of open and web sources — check the links before relying on them.`, 54, y, { width: W - 50, lineBreak: false, height: 12 })
       .text(`${p + 1} / ${range.count}`, 54, y, { width: W, align: 'right', lineBreak: false });
