@@ -31,13 +31,25 @@ function md(text, sources) {
   return html + (list ? '</ul>' : '');
 }
 
+function launchUntilLabel(isoDay) {
+  if (!isoDay) return '';
+  const d = new Date(`${isoDay}T12:00:00+03:00`);
+  return d.toLocaleDateString('en-GB', { timeZone: 'Africa/Kampala', day: 'numeric', month: 'short', year: 'numeric' });
+}
 function setUsage(u) {
   if (!u) return; ME.usage = u;
   const pill = $('#usagePill'); pill.classList.remove('hidden');
   pill.textContent = `${u.questionsLeft}/${u.dailyLimit} today`;
+  const launch = !!(u.freeLaunch || CFG.freeLaunch);
+  const until = u.freeLaunchUntil || CFG.freeLaunchUntil;
   $('#menuUsage').innerHTML = `${u.questionsLeft} of ${u.dailyLimit} questions left today (resets midnight, Kampala)<br>` +
-    (u.subscribed ? `Weekly plan active until ${new Date(u.subscribedUntil).toLocaleDateString('en-GB', { timeZone: 'Africa/Kampala', day: 'numeric', month: 'short' })}` : `${u.freeDownloadsLeft} of ${u.freeDownloads} free PDF downloads left`);
-  $('#composerNote').textContent = u.questionsLeft ? `${u.questionsLeft} question${u.questionsLeft === 1 ? '' : 's'} left today · answers come from open sources and the web — check the links` : 'Daily limit reached — your 15 questions reset at midnight (Kampala time).';
+    (launch ? `Free during launch${until ? ` until ${launchUntilLabel(until)}` : ''}` :
+      (u.subscribed ? `Weekly plan active until ${new Date(u.subscribedUntil).toLocaleDateString('en-GB', { timeZone: 'Africa/Kampala', day: 'numeric', month: 'short' })}` : `${u.freeDownloadsLeft} of ${u.freeDownloads} free PDF downloads left`));
+  $('#composerNote').textContent = u.questionsLeft
+    ? `${u.questionsLeft} question${u.questionsLeft === 1 ? '' : 's'} left today · answers come from open sources and the web — check the links`
+    : 'Daily free limit reached — try again tomorrow';
+  const planBtn = $('#planBtn');
+  if (planBtn) planBtn.classList.toggle('hidden', launch);
 }
 
 async function boot() {
@@ -184,12 +196,12 @@ function renderAnswer(card, a) {
     ${list ? `<div class="srcs"><h4>SOURCES</h4><ol>${list}</ol></div>` : ''}
     <div class="a-actions"><button class="pdf-btn" type="button"><svg viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="M12 16 7 11l1.4-1.4 2.6 2.6V4h2v8.2l2.6-2.6L17 11zm-6 4a2 2 0 0 1-2-2v-3h2v3h12v-3h2v3a2 2 0 0 1-2 2z"/></svg>Download as PDF</button><span class="dl-note"></span></div>`;
   const btn = card.querySelector('.pdf-btn'), note = card.querySelector('.dl-note');
-  const upd = () => { const u = ME.usage; note.textContent = u.subscribed ? 'Weekly plan active' : `${u.freeDownloadsLeft} free download${u.freeDownloadsLeft === 1 ? '' : 's'} left`; };
+  const upd = () => { const u = ME.usage; const launch = !!(u.freeLaunch || CFG.freeLaunch); note.textContent = launch ? 'Free during launch' : (u.subscribed ? 'Weekly plan active' : `${u.freeDownloadsLeft} free download${u.freeDownloadsLeft === 1 ? '' : 's'} left`); };
   upd();
   btn.addEventListener('click', async () => {
     btn.disabled = true; note.textContent = 'Preparing PDF…';
     const r = await fetch(`/api/answers/${a.id}/pdf`, { method: 'POST', credentials: 'same-origin' });
-    if (r.status === 402) { btn.disabled = false; const j = await r.json(); setUsage(j.usage); upd(); openPaywall(j.error); return; }
+    if (r.status === 402) { btn.disabled = false; const j = await r.json(); setUsage(j.usage); upd(); if (!(ME.usage?.freeLaunch || CFG.freeLaunch)) openPaywall(j.error); else toast(j.error || 'Could not download.'); return; }
     let blob, j;
     try {
       if (!r.ok) throw new Error(`HTTP ${r.status}`);
@@ -208,7 +220,13 @@ function renderAnswer(card, a) {
 // ---------- Paywall ----------
 function openPaywall(msg) {
   const d = $('#paywall'), p = CFG.payments || {};
+  if (CFG.freeLaunch || ME?.usage?.freeLaunch) {
+    toast('Free during launch — no subscription needed.');
+    return;
+  }
   $('#pwUsd').textContent = `US$${p.weeklyUsd}`; $('#pwUgx').textContent = `UGX ${Number(p.weeklyUgx).toLocaleString('en-US')}`;
+  const perkQ = document.getElementById('pwDailyQ');
+  if (perkQ) perkQ.textContent = String((CFG.limits && CFG.limits.dailyQuestions) || ME?.usage?.dailyLimit || 20);
   $('#pwMsg').textContent = msg || (ME.usage.subscribed ? 'Your weekly plan is active.' : `You have ${ME.usage.freeDownloadsLeft} of ${ME.usage.freeDownloads} free downloads left.`);
   $('#pwPay').classList.toggle('hidden', !p.configured); $('#pwNotConfigured').classList.toggle('hidden', !!p.configured);
   $('#pwDev').classList.toggle('hidden', !p.devToggle);

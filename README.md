@@ -5,7 +5,7 @@ account posted on a given day) using **open, free sources plus Google Search**, 
 **Download as PDF** button under every answer.
 
 - **Sign-in:** Gmail address + 6-digit email code (only `@gmail.com` / `@googlemail.com`). No Google OAuth setup needed.
-- **Limits:** 15 questions/tasks per day (reset at midnight Africa/Kampala). 20 free PDF downloads, then the **weekly plan, US$0.81/week** (or UGX 3,000 by mobile money) through Flutterwave.
+- **Limits:** 20 questions/tasks per day (reset at midnight Africa/Kampala). During the free launch month (`FREE_LAUNCH_UNTIL`, through 15 Dec 2026 Kampala time) no subscription is required and PDFs are free; that flag does not change `APP_ENV` or test-mode sign-in. After launch: 20 free PDF downloads, then the **weekly plan, US$0.81/week** (or UGX 3,000 by mobile money) through Flutterwave. A global daily cap of 80 YouTube searches (with a 24-hour per-query cache) and 400 Gemini API calls keeps usage inside the free tiers.
 - **Sources:** Wikipedia, OpenAlex (250M+ papers), arXiv, Crossref, **Google News** (Uganda and world RSS), **BBC** and other free news RSS (Al Jazeera, The Guardian, NPR, Africanews, The Independent, The Observer, Nile Post), **DuckDuckGo Lite** web search with short page excerpts, Bluesky (public AppView), Mastodon (public API), Reddit (public JSON / app-only OAuth), **Google Search grounding** (when an AI key is set), and optional YouTube Data API and Google Programmable Search. No scraping of closed platforms (Instagram, TikTok, Facebook, dating apps). **Videos are never downloaded**, only shown as links or official YouTube embeds.
 - **AI:** Google Gemini (`gemini-3.1-flash-lite`) through the native `generateContent` API, with **Google Search grounding**. Gathered open sources are passed in as extra context, and grounded web pages are merged into the cited source list. If grounding hits a free-tier quota (HTTP 429) or fails, TTu retries without search (and, if needed, via Gemini's OpenAI-compatible endpoint) rather than erroring. With no key, TTu runs in **demo mode**: it builds an extractive summary straight from the fetched sources (clearly badged "Demo mode").
 - **Platforms:** installable PWA (Android + desktop), Capacitor/TWA wrapper for an APK (`android/`), and an Electron shell for a Windows `.exe` installer (`desktop/`).
@@ -60,7 +60,7 @@ public/pdf.js        PDFKit in the browser: TTu header, answer, images, clickabl
 lib/auth.js          Gmail-only email-code sign-in (hashed codes, 10-min expiry, 5 tries, rate limits), sessions
 lib/mail.js          Resend or SMTP sender (or console in dev)
 lib/payments.js      Flutterwave Standard checkout, server-side verify, webhook verif-hash
-lib/limits.js        15/day questions, 20 free downloads, weekly subscription
+lib/limits.js        20/day questions, free-launch mode, YouTube/AI caps, weekly subscription
 lib/db.js            async DB facade (D1 driver); lib/db-node.js node:sqlite driver; lib/schema.sql
 public/              PWA: index.html, app.js, styles.css, sw.js, manifest, icons, privacy.html, terms.html
 scripts/icons.mjs    regenerates all icons from ../ttu-pigeon-icon.png
@@ -79,6 +79,7 @@ See `.env.example` for the full list. The important ones:
 | `AI_API_KEY` (+ `AI_BASE_URL`, `AI_MODEL`) | real AI answers + Google Search grounding | Defaults: native Gemini `generateContent` API, `gemini-3.1-flash-lite`. Grounding falls back automatically if the search quota is hit. |
 | `RESEND_API_KEY` + `RESEND_FROM` **or** `SMTP_*` | emailing sign-in codes | Without either, codes only go to the server log, so real users can't sign in |
 | `FLW_PUBLIC_KEY`, `FLW_SECRET_KEY`, `FLW_SECRET_HASH` | weekly plan payments | Without them the paywall says "Payments are not configured yet" |
+| `FREE_LAUNCH_UNTIL`, `DAILY_QUESTIONS`, `DAILY_YOUTUBE_SEARCHES`, `DAILY_AI_CALLS` | launch month and fair-use caps | `FREE_LAUNCH_UNTIL=YYYY-MM-DD` hides the subscribe UI and waives payments until the end of that Kampala day. It does not switch `APP_ENV`. |
 | `YOUTUBE_API_KEY`, `GOOGLE_CSE_KEY`/`GOOGLE_CSE_ID`, `OPENALEX_API_KEY`, `REDDIT_CLIENT_ID`/`SECRET` | optional extra sources | Each source is skipped gracefully when its key is missing |
 
 ## Launch checklist (Sunday)

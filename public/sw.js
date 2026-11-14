@@ -1,5 +1,5 @@
 // TTu service worker: caches the app shell for fast/offline start; API calls always go to the network.
-const CACHE = 'ttu-shell-v4';
+const CACHE = 'ttu-shell-v5';
 const SHELL = ['/', '/index.html', '/styles.css', '/app.js', '/manifest.webmanifest', '/favicon.png', '/icons/logo-mark-32.png', '/icons/logo-mark-64.png', '/icons/logo-mark-128.png', '/icons/logo-mark-192.png', '/offline.html'];
 self.addEventListener('install', (e) => { e.waitUntil(caches.open(CACHE).then((c) => c.addAll(SHELL)).then(() => self.skipWaiting())); });
 self.addEventListener('activate', (e) => { e.waitUntil(caches.keys().then((ks) => Promise.all(ks.filter((k) => k !== CACHE).map((k) => caches.delete(k)))).then(() => self.clients.claim())); });
