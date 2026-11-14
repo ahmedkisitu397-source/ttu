@@ -12,12 +12,11 @@ account posted on a given day) using **open, free sources plus Google Search**, 
 
 ## Live test (Cloudflare)
 
-TTu runs on **Cloudflare Workers** with a **D1** database: <https://ttu.hadtah.workers.dev>
+TTu runs on **Cloudflare Workers** with a **D1** database: <https://ttu.hadtah.com> (also <https://ttu.hadtah.workers.dev>).
 
-It's in **TEST MODE** (`APP_ENV=test` in `wrangler.jsonc`): there's no email service yet, so the 6-digit sign-in code is
-shown on the screen instead of emailed, and the paywall has an **Activate test week** button. Anyone can sign in as any
-Gmail address in this mode, so don't use it for real users. At launch: set `RESEND_API_KEY`/`RESEND_FROM` as secrets and
-`APP_ENV` to `production`.
+It is in **production** (`APP_ENV=production`): sign-in codes are emailed with Resend and are not shown on screen, and the
+test-week paywall toggle is off. During the free launch month (`FREE_LAUNCH_UNTIL=2026-12-15`, Kampala) no subscription
+is required. Fair-use caps still apply (20 questions per user per day, plus global YouTube and Gemini caps).
 
 ```bash
 npm install

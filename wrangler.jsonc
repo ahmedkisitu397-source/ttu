@@ -18,11 +18,11 @@
     { "binding": "DB", "database_name": "ttu", "database_id": "62c70f6a-378b-428c-8f18-b48b96f027c6", "migrations_dir": "migrations" }
   ],
   "vars": {
-    // TEST MODE: anything other than "production" shows the sign-in code on screen (no email service yet)
-    // and enables the "Activate test week" button. Set to "production" at launch, with RESEND_API_KEY/RESEND_FROM.
-    // Do not flip APP_ENV here just to run the free launch month.
-    "APP_ENV": "test",
+    // Production: sign-in codes are emailed (RESEND_API_KEY secret + RESEND_FROM) and the test-week
+    // toggle is disabled. FREE_LAUNCH_UNTIL still waives subscriptions through 15 Dec 2026 (Kampala).
+    "APP_ENV": "production",
     "APP_URL": "https://ttu.hadtah.com",
+    "RESEND_FROM": "TTu <no-reply@hadtah.com>",
     "FREE_LAUNCH_UNTIL": "2026-12-15",
     "DAILY_QUESTIONS": "20",
     "DAILY_YOUTUBE_SEARCHES": "80",

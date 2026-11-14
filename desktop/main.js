@@ -2,7 +2,7 @@
 const { app, BrowserWindow, shell, Menu, dialog } = require('electron');
 const path = require('path');
 
-const START = process.env.TTU_URL || 'https://ttu.hadtah.workers.dev';
+const START = process.env.TTU_URL || 'https://ttu.hadtah.com';
 const ORIGIN = new URL(START).origin;
 
 let win = null;

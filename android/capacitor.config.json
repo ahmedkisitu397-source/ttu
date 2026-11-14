@@ -3,10 +3,10 @@
   "appName": "TTu",
   "webDir": "www",
   "server": {
-    "url": "https://ttu.hadtah.workers.dev",
+    "url": "https://ttu.hadtah.com",
     "cleartext": false,
     "androidScheme": "https",
-    "allowNavigation": ["ttu.hadtah.workers.dev"]
+    "allowNavigation": ["ttu.hadtah.com", "ttu.hadtah.workers.dev"]
   },
   "android": {
     "allowMixedContent": false,
