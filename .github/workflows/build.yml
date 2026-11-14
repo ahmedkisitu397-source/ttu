@@ -1,1 +1,132 @@
-placeholder
+name: Build TTu (Android APK + Windows installer)
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+env:
+  APP: TTu
+  VERSION: 1.0.0
+
+jobs:
+  android:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: android
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: android/package-lock.json
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+      - run: npm ci
+      - run: npx cap sync android
+      - name: Decode release keystore
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+        run: |
+          set +x
+          mkdir -p "$RUNNER_TEMP/hadtah-signing"
+          printf '%s' "$ANDROID_KEYSTORE_BASE64" | tr -d '\n\r ' | base64 -d > "$RUNNER_TEMP/hadtah-signing/hadtah-release.p12"
+          chmod 600 "$RUNNER_TEMP/hadtah-signing/hadtah-release.p12"
+      - name: Build signed release APK
+        working-directory: android/android
+        env:
+          HADTAH_KEYSTORE_FILE: ${{ runner.temp }}/hadtah-signing/hadtah-release.p12
+          HADTAH_STORE_PASSWORD: ${{ secrets.ANDROID_STORE_PASSWORD }}
+          HADTAH_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+          HADTAH_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+        run: |
+          set +x
+          export HADTAH_STORE_PASSWORD="$(printf '%s' "$HADTAH_STORE_PASSWORD" | tr -d '\n\r')"
+          export HADTAH_KEY_PASSWORD="$(printf '%s' "$HADTAH_KEY_PASSWORD" | tr -d '\n\r')"
+          export HADTAH_KEY_ALIAS="$(printf '%s' "$HADTAH_KEY_ALIAS" | tr -d '\n\r')"
+          chmod +x gradlew
+          ./gradlew assembleRelease --no-daemon --stacktrace
+      - name: Verify APK signatures (v2+v3)
+        working-directory: .
+        env:
+          HADTAH_KEYSTORE_FILE: ${{ runner.temp }}/hadtah-signing/hadtah-release.p12
+          HADTAH_STORE_PASSWORD: ${{ secrets.ANDROID_STORE_PASSWORD }}
+          HADTAH_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+          HADTAH_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+        run: |
+          set +x
+          export HADTAH_STORE_PASSWORD="$(printf '%s' "$HADTAH_STORE_PASSWORD" | tr -d '\n\r')"
+          export HADTAH_KEY_PASSWORD="$(printf '%s' "$HADTAH_KEY_PASSWORD" | tr -d '\n\r')"
+          export HADTAH_KEY_ALIAS="$(printf '%s' "$HADTAH_KEY_ALIAS" | tr -d '\n\r')"
+          APK="android/android/app/build/outputs/apk/release/app-release.apk"
+          SDK="${ANDROID_SDK_ROOT:-${ANDROID_HOME}}"
+          SIGNER="$(find "$SDK" -type f -name apksigner | sort | tail -1)"
+          if [ -z "$SIGNER" ]; then echo "apksigner not found under $SDK"; ls -la "$SDK" || true; exit 1; fi
+          if ! "$SIGNER" verify --verbose --print-certs "$APK" 2>&1 | tee /tmp/apk-verify.txt; then
+            echo "initial verify failed"
+            exit 1
+          fi
+          if ! grep -q "Verified using v2 scheme" /tmp/apk-verify.txt || ! grep -q "Verified using v3 scheme" /tmp/apk-verify.txt; then
+            echo "Adding v2+v3 signatures with apksigner"
+            "$SIGNER" sign --ks "$HADTAH_KEYSTORE_FILE" --ks-key-alias "$HADTAH_KEY_ALIAS" --ks-pass env:HADTAH_STORE_PASSWORD --key-pass env:HADTAH_KEY_PASSWORD --v1-signing-enabled true --v2-signing-enabled true --v3-signing-enabled true "$APK"
+            "$SIGNER" verify --verbose --print-certs "$APK" | tee /tmp/apk-verify.txt
+          fi
+          grep -q "Verified using v2 scheme" /tmp/apk-verify.txt
+          grep -q "Verified using v3 scheme" /tmp/apk-verify.txt
+      - run: cp android/android/app/build/outputs/apk/release/app-release.apk "${APP}-${VERSION}-debug.apk"
+        working-directory: .
+      - uses: actions/upload-artifact@v4
+        with:
+          name: apk
+          path: TTu-1.0.0-debug.apk
+
+  windows:
+    runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: desktop
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: desktop/package-lock.json
+      - run: npm ci
+      - name: Build NSIS installer (unsigned)
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: "false"
+        run: npx electron-builder --win nsis --x64 --publish never
+      - uses: actions/upload-artifact@v4
+        with:
+          name: windows
+          path: desktop/dist/*.exe
+
+  release:
+    needs: [android, windows]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: out
+          merge-multiple: true
+      - name: Publish pre-release v${{ env.VERSION }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          ls -la out
+          TAG="v${VERSION}"
+          if ! gh release view "$TAG" >/dev/null 2>&1; then
+            gh release create "$TAG" --prerelease --target "${{ github.sha }}" \
+              --title "${APP} ${VERSION} (test build)" \
+              --notes "Test build of ${APP} by Hadtah Technologies Limited. The Android wrapper and Windows app open https://ttu.hadtah.com. The Android APK is a Hadtah-signed release build (v2 and v3 signatures). If you already installed an earlier test APK, uninstall it once before installing this one — Android will not update a debug-signed app in place. The Windows installer is not code-signed, so Windows SmartScreen shows a warning (choose More info, then Run anyway). Source links and Watch on YouTube open in the system browser; YouTube embeds play in the app; PDFs save to Android Downloads or the Windows Save dialog."
+          fi
+          gh release upload "$TAG" out/* --clobber
