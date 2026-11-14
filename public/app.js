@@ -9,7 +9,7 @@ const api = async (path, opts = {}) => {
   return { ok: r.ok, status: r.status, body, raw: r };
 };
 const toast = (t) => { const el = $('#toast'); el.textContent = t; el.classList.add('show'); clearTimeout(toast.t); toast.t = setTimeout(() => el.classList.remove('show'), 3200); };
-const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const esc = (s) => String(s != null ? s : '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const safeUrl = (u) => (/^https?:\/\//i.test(u || '') ? u : '#');
 
 // Small, safe Markdown renderer (escape first, then format).
@@ -58,7 +58,7 @@ async function boot() {
   if (me.ok) { ME = me.body; showChat(); } else showSignin();
   const p = new URLSearchParams(location.search).get('paid');
   if (p) { history.replaceState({}, '', '/'); toast(p === '1' ? 'Payment confirmed — your weekly plan is active.' : 'Payment was not completed.'); }
-  if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(() => {});
+  if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(function () {});
 }
 
 
@@ -66,7 +66,7 @@ async function boot() {
 function themePref() {
   let p = document.documentElement.getAttribute('data-theme-pref');
   if (p === 'light' || p === 'dark' || p === 'system') return p;
-  try { p = localStorage.getItem('ttu-theme'); } catch { p = null; }
+  try { p = localStorage.getItem('ttu-theme'); } catch (e) { p = null; }
   if (p === 'light' || p === 'dark' || p === 'system') return p;
   return 'system';
 }
@@ -80,7 +80,7 @@ function applyTheme(pref, persist = true) {
   const t = resolveTheme(pref);
   document.documentElement.setAttribute('data-theme', t);
   document.documentElement.setAttribute('data-theme-pref', pref);
-  try { if (persist) localStorage.setItem('ttu-theme', pref); } catch {}
+  try { if (persist) localStorage.setItem('ttu-theme', pref); } catch (e) {}
   const meta = document.getElementById('themeColor');
   if (meta) meta.setAttribute('content', t === 'light' ? '#ffffff' : '#000000');
   document.querySelectorAll('[data-theme-set]').forEach((b) => {
@@ -112,7 +112,7 @@ $('#emailForm').addEventListener('submit', async (e) => {
   const btn = e.submitter; btn.disabled = true; btn.textContent = 'Sending…';
   const r = await api('/api/auth/request-code', { method: 'POST', body: JSON.stringify({ email }) });
   btn.disabled = false; btn.textContent = 'Send me a code';
-  if (!r.ok) { $('#authMsg').textContent = r.body?.error || 'Could not send the code.'; return; }
+  if (!r.ok) { $('#authMsg').textContent = (r.body && r.body.error) || 'Could not send the code.'; return; }
   pendingEmail = r.body.email; $('#sentTo').textContent = r.body.email;
   $('#emailForm').classList.add('hidden'); $('#codeForm').classList.remove('hidden'); $('#code').focus();
   const dn = $('#devNotice');
@@ -125,7 +125,7 @@ $('#emailForm').addEventListener('submit', async (e) => {
 $('#codeForm').addEventListener('submit', async (e) => {
   e.preventDefault(); $('#authMsg').textContent = '';
   const r = await api('/api/auth/verify', { method: 'POST', body: JSON.stringify({ email: pendingEmail, code: $('#code').value.trim() }) });
-  if (!r.ok) { $('#authMsg').textContent = r.body?.error || 'Sign-in failed.'; return; }
+  if (!r.ok) { $('#authMsg').textContent = (r.body && r.body.error) || 'Sign-in failed.'; return; }
   ME = (await api('/api/me')).body; $('#code').value = ''; showChat();
 });
 $('#changeEmail').addEventListener('click', () => { $('#codeForm').classList.add('hidden'); $('#emailForm').classList.remove('hidden'); $('#devNotice').classList.add('hidden'); });
@@ -157,7 +157,7 @@ $('#ask').addEventListener('submit', async (e) => {
   const r = await api('/api/ask', { method: 'POST', body: JSON.stringify({ q }) });
   $('.send').disabled = false;
   const card = turn.querySelector('.a-card');
-  if (!r.ok) { card.outerHTML = `<div class="err">${esc(r.body?.error || 'Something went wrong.')}</div>`; if (r.body?.usage) setUsage(r.body.usage); return; }
+  if (!r.ok) { card.outerHTML = `<div class="err">${esc((r.body && r.body.error) || 'Something went wrong.')}</div>`; if (r.body && r.body.usage) setUsage(r.body.usage); return; }
   renderAnswer(card, r.body); setUsage(r.body.usage);
 });
 
@@ -184,7 +184,7 @@ async function deliverPdf(blob, filename) {
 
 function renderAnswer(card, a) {
   const srcs = a.sources || [];
-  const imgs = (a.images || []).map((im) => `<a href="${esc(safeUrl(srcs[im.ref - 1]?.url))}" target="_blank" rel="noopener" title="${esc(im.caption)}"><img src="${esc(safeUrl(im.url))}" alt="${esc(im.caption)}" loading="lazy" referrerpolicy="no-referrer" onerror="this.parentNode.remove()"></a>`).join('');
+  const imgs = (a.images || []).map((im) => `<a href="${esc(safeUrl(srcs[im.ref - 1] && srcs[im.ref - 1].url))}" target="_blank" rel="noopener" title="${esc(im.caption)}"><img src="${esc(safeUrl(im.url))}" alt="${esc(im.caption)}" loading="lazy" referrerpolicy="no-referrer" onerror="this.parentNode.remove()"></a>`).join('');
   const vids = (a.videos || []).map((v) => v.embed
     ? `<div class="vid" style="display:block"><iframe src="${esc(v.embed)}" title="${esc(v.title)}" loading="lazy" allow="encrypted-media; picture-in-picture" allowfullscreen></iframe></div>`
     : `<a class="vid" href="${esc(safeUrl(v.url))}" target="_blank" rel="noopener"><span class="play">▶</span><span>${esc(v.note || 'Watch video')} <span class="muted">[${v.ref}] — videos can't be downloaded in TTu</span></span></a>`).join('');
@@ -201,7 +201,7 @@ function renderAnswer(card, a) {
   btn.addEventListener('click', async () => {
     btn.disabled = true; note.textContent = 'Preparing PDF…';
     const r = await fetch(`/api/answers/${a.id}/pdf`, { method: 'POST', credentials: 'same-origin' });
-    if (r.status === 402) { btn.disabled = false; const j = await r.json(); setUsage(j.usage); upd(); if (!(ME.usage?.freeLaunch || CFG.freeLaunch)) openPaywall(j.error); else toast(j.error || 'Could not download.'); return; }
+    if (r.status === 402) { btn.disabled = false; const j = await r.json(); setUsage(j.usage); upd(); if (!((ME.usage && ME.usage.freeLaunch) || CFG.freeLaunch)) openPaywall(j.error); else toast(j.error || 'Could not download.'); return; }
     let blob, j;
     try {
       if (!r.ok) throw new Error(`HTTP ${r.status}`);
@@ -220,13 +220,13 @@ function renderAnswer(card, a) {
 // ---------- Paywall ----------
 function openPaywall(msg) {
   const d = $('#paywall'), p = CFG.payments || {};
-  if (CFG.freeLaunch || ME?.usage?.freeLaunch) {
+  if (CFG.freeLaunch || (ME && ME.usage && ME.usage.freeLaunch)) {
     toast('Free during launch — no subscription needed.');
     return;
   }
   $('#pwUsd').textContent = `US$${p.weeklyUsd}`; $('#pwUgx').textContent = `UGX ${Number(p.weeklyUgx).toLocaleString('en-US')}`;
   const perkQ = document.getElementById('pwDailyQ');
-  if (perkQ) perkQ.textContent = String((CFG.limits && CFG.limits.dailyQuestions) || ME?.usage?.dailyLimit || 20);
+  if (perkQ) perkQ.textContent = String((CFG.limits && CFG.limits.dailyQuestions) || (ME && ME.usage && ME.usage.dailyLimit) || 20);
   $('#pwMsg').textContent = msg || (ME.usage.subscribed ? 'Your weekly plan is active.' : `You have ${ME.usage.freeDownloadsLeft} of ${ME.usage.freeDownloads} free downloads left.`);
   $('#pwPay').classList.toggle('hidden', !p.configured); $('#pwNotConfigured').classList.toggle('hidden', !!p.configured);
   $('#pwDev').classList.toggle('hidden', !p.devToggle);
@@ -237,7 +237,7 @@ $('#pwPay').addEventListener('click', async (e) => {
   b.disabled = true;
   const r = await api('/api/pay/init', { method: 'POST', body: JSON.stringify({ currency: b.dataset.cur }) });
   b.disabled = false;
-  if (r.ok && r.body.link) location.href = r.body.link; else toast(r.body?.error || 'Could not start payment.');
+  if (r.ok && r.body && r.body.link) location.href = r.body.link; else toast((r.body && r.body.error) || 'Could not start payment.');
 });
 for (const [id, on] of [['#devSubOn', true], ['#devSubOff', false]]) $(id).addEventListener('click', async () => {
   const r = await api('/api/dev/subscribe', { method: 'POST', body: JSON.stringify({ on }) });

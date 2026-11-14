@@ -5,11 +5,13 @@ const INK = '#111111', MUTED = '#555555', RULE = '#d0d0d0', ACCENT = '#111111';
 let pdfkitPromise;
 function loadPdfKit() {
   if (window.PDFDocument) return Promise.resolve(window.PDFDocument);
-  pdfkitPromise ||= new Promise((res, rej) => {
-    const s = document.createElement('script'); s.src = '/vendor/pdfkit.standalone.js';
-    s.onload = () => res(window.PDFDocument); s.onerror = () => { pdfkitPromise = null; rej(new Error('Could not load the PDF tool')); };
-    document.head.appendChild(s);
-  });
+  if (!pdfkitPromise) {
+    pdfkitPromise = new Promise((res, rej) => {
+      const s = document.createElement('script'); s.src = '/vendor/pdfkit.standalone.js';
+      s.onload = () => res(window.PDFDocument); s.onerror = () => { pdfkitPromise = null; rej(new Error('Could not load the PDF tool')); };
+      document.head.appendChild(s);
+    });
+  }
   return pdfkitPromise;
 }
 const bin = async (url) => { const r = await fetch(url); if (!r.ok) throw new Error(`${url} ${r.status}`); return r.arrayBuffer(); };
@@ -17,15 +19,19 @@ const bin = async (url) => { const r = await fetch(url); if (!r.ok) throw new Er
 // Fetch an image (through TTu's own proxy), convert any format to JPEG, max 900px wide, using a canvas.
 async function fetchImage(url) {
   try {
-    const r = await fetch(url, { credentials: 'same-origin', signal: AbortSignal.timeout(9000) });
-    if (!r.ok) return null;
-    const bmp = await createImageBitmap(await r.blob());
-    const scale = Math.min(1, 900 / bmp.width);
-    const width = Math.max(1, Math.round(bmp.width * scale)), height = Math.max(1, Math.round(bmp.height * scale));
-    const cv = document.createElement('canvas'); cv.width = width; cv.height = height;
-    const ctx = cv.getContext('2d'); ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, width, height); ctx.drawImage(bmp, 0, 0, width, height);
-    return { buf: cv.toDataURL('image/jpeg', 0.82), width, height };
-  } catch { return null; }
+    const ac = (typeof AbortController !== 'undefined') ? new AbortController() : null;
+    const to = setTimeout(function () { if (ac) ac.abort(); }, 9000);
+    try {
+      const r = await fetch(url, ac ? { credentials: 'same-origin', signal: ac.signal } : { credentials: 'same-origin' });
+      if (!r.ok) return null;
+      const bmp = await createImageBitmap(await r.blob());
+      const scale = Math.min(1, 900 / bmp.width);
+      const width = Math.max(1, Math.round(bmp.width * scale)), height = Math.max(1, Math.round(bmp.height * scale));
+      const cv = document.createElement('canvas'); cv.width = width; cv.height = height;
+      const ctx = cv.getContext('2d'); ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, width, height); ctx.drawImage(bmp, 0, 0, width, height);
+      return { buf: cv.toDataURL('image/jpeg', 0.82), width, height };
+    } finally { clearTimeout(to); }
+  } catch (e) { return null; }
 }
 
 // Minimal Markdown → PDF: paragraphs, "- " bullets, **bold**, *italic*, [n] citations, `code`.

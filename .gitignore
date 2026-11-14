@@ -17,3 +17,8 @@ android/android/*.iml
 android/android/.idea/
 desktop/node_modules/
 desktop/dist/
+
+# Signing keystores (never commit)
+*.p12
+*.jks
+*.keystore
